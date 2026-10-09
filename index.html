@@ -1,0 +1,177 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Reporter - Firebase</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #74ebd5, #9face6);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            width: 90%;
+            max-width: 400px;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px #0003;
+        }
+
+        h1 {
+            text-align: center;
+            color: #263b80;
+        }
+
+        input, textarea, button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        input, textarea {
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background: #263b80;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4058b5;
+        }
+
+        #message {
+            text-align: center;
+            overflow-wrap: anywhere;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🌦️ Weather Reporter</h1>
+
+        <form id="weatherForm">
+            <input id="city" type="text"
+                   placeholder="Enter city name" required>
+
+            <input id="temperature" type="number" step="any"
+                   placeholder="Temperature (°C)" required>
+
+            <input id="humidity" type="number" min="0" max="100"
+                   placeholder="Humidity (%)" required>
+
+            <textarea id="condition"
+                      placeholder="Weather condition"
+                      required></textarea>
+
+            <button type="submit">Save Weather Report</button>
+        </form>
+
+        <p id="message" role="status"></p>
+    </div>
+
+    <script type="module">
+        // Import Firebase functions
+        import { initializeApp }
+            from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+
+        import {
+            getFirestore,
+            collection,
+            addDoc,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDx20YoRDBcGaPgjJ8JYw-J1oTdlHkRqWw",
+            authDomain: "weather-reporter-fed13.firebaseapp.com",
+            projectId: "weather-reporter-fed13",
+            storageBucket: "weather-reporter-fed13.firebasestorage.app",
+            messagingSenderId: "798607425952",
+            appId: "1:798607425952:web:08531cb2b6674ed3aba4c5",
+            measurementId: "G-RTSXXSQQFF"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+
+        // Connect to Firestore
+        const db = getFirestore(app);
+
+        // Handle form submission
+        document.getElementById("weatherForm")
+            .addEventListener("submit", async (event) => {
+
+                event.preventDefault();
+
+                const city = document.getElementById("city")
+                    .value.trim();
+
+                const temperature = Number(
+                    document.getElementById("temperature").value
+                );
+
+                const humidity = Number(
+                    document.getElementById("humidity").value
+                );
+
+                const condition = document.getElementById("condition")
+                    .value.trim();
+
+                const message = document.getElementById("message");
+
+                if (!city || !condition ||
+                    !Number.isFinite(temperature) ||
+                    !Number.isFinite(humidity) ||
+                    humidity < 0 || humidity > 100) {
+
+                    message.textContent =
+                        "Please enter valid weather information.";
+                    return;
+                }
+
+                message.textContent = "Saving report...";
+
+                try {
+                    // Save data in Firebase Firestore
+                    await addDoc(collection(db, "weatherReports"), {
+                        city: city,
+                        temperature: temperature,
+                        humidity: humidity,
+                        condition: condition,
+                        timestamp: serverTimestamp()
+                    });
+
+                    message.textContent =
+                        "Weather report saved successfully!";
+
+                    document.getElementById("weatherForm").reset();
+
+                } catch (error) {
+                    console.error("Firebase error:", error);
+
+                    message.textContent =
+                        "Failed to save. Check your Firestore setup and rules.";
+                }
+            });
+    </script>
+</body>
+</html>
+```
